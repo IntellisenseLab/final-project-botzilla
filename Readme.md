@@ -18,7 +18,7 @@
 
 ## 📖 Overview
 
-BotZilla is a fully autonomous robotic system designed to operate in a controlled indoor environment. Starting from a charging station, the robot searches for cubes, collects them using a gripper arm, deposits them in a designated drop-off zone, and returns to dock — all without human intervention.
+In this final project we are building robot(Kobuki-Qbot) that operates in a controlled indoor environment. Starting from a charging station, the robot searches for cubes, collects them using a maipulator arm, deposits them in a designated drop-off zone, and returns to dock — all without human intervention.
 
 The project is motivated by real-world applications such as:
 - 📦 Automated sorting in logistics warehouses
@@ -135,6 +135,7 @@ ros2 launch botzilla botzilla_autonomy.launch.py
 
 ```
 botzilla/
+├── test/                   # test files for kuboki moving 
 ├── src/
 │   ├── perception/          # YOLOv8 detection + PCL depth fusion nodes
 │   ├── planning/            # SMACH state machine + path planning
