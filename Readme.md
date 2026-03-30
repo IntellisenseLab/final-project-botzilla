@@ -92,7 +92,7 @@ The system is built on three core robotics pillars: **Perception**, **Planning**
 - Ubuntu 22.04 (or compatible)
 - ROS 2 Jazzy installed
 - Python 3.10+
-- Gazebo (for simulation)
+- Gazebo (for simulation) 
 
 ### Installation
 
