@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="botzilla_world">
+    <!-- A global light source using Fuel URI -->
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
+    </include>
+    <!-- A ground plane using Fuel URI -->
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground Plane</uri>
+    </include>
+
+    <!-- Placement Zone (0.5m x 0.5m) represented as a visual box -->
+    <model name="drop_off_zone">
+      <static>true</static>
+      <pose>2 2 0.01 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.01</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0 1 0 1</ambient> <!-- Green for the drop zone -->
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Target Cube 1 -->
+    <model name="cube_1">
+      <pose>1 0 0.05 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.05</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.05</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1 0 0 1</ambient> <!-- Red cube -->
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Physics settings for better simulation -->
+    <physics type="ode">
+      <real_time_update_rate>1000.0</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+    </physics>
+  </world>
+</sdf>
