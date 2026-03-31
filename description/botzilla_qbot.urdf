@@ -7,7 +7,7 @@
   <joint name="base_joint" type="fixed">
     <parent link="base_footprint"/>
     <child link="base_link"/>
-    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    <origin xyz="0 0 0.00" rpy="0 0 0"/>
   </joint>
 
   <!-- =============== Base Link (Chassis) =============== -->
@@ -182,8 +182,8 @@
   <joint name="arm_left_joint" type="fixed">
     <parent link="base_link"/>
     <child link="arm_left_link"/>
-    <!-- Positioned at the front (+x), shifted left (+y) and angled slightly -->
-    <origin xyz="0.18 0.06 -0.01" rpy="0 0 0.3"/> 
+    <!-- Positioned straight forward with 0 rotation -->
+    <origin xyz="0.18 0.08 -0.01" rpy="0 0 0"/> 
   </joint>
 
   <!-- Right Arm -->
@@ -208,8 +208,8 @@
   <joint name="arm_right_joint" type="fixed">
     <parent link="base_link"/>
     <child link="arm_right_link"/>
-    <!-- Positioned at the front (+x), shifted right (-y) and angled slightly -->
-    <origin xyz="0.18 -0.06 -0.01" rpy="0 0 -0.3"/>
+    <!-- Positioned straight forward with 0 rotation -->
+    <origin xyz="0.18 -0.08 -0.01" rpy="0 0 0"/>
   </joint>
 
   <!-- =============== Gazebo Plugins (Harmonic) =============== -->
