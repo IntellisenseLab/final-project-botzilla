@@ -7,9 +7,14 @@
   <maintainer email="hirunamalavipathirana.333@gmail.com">hiruna</maintainer>
   <license>TODO: License declaration</license>
 
+  <buildtool_depend>ament_python</buildtool_depend>
+
   <depend>rclpy</depend>
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
+  
+  <!-- Added Python serial dependency for KobukiDriver -->
+  <exec_depend>python3-serial</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
