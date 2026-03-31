@@ -28,26 +28,106 @@
       </link>
     </model>
 
-    <!-- Target Cube 1 -->
+    <!-- Starting Position Marker (0.5m x 0.5m) -->
+    <model name="starting_area">
+      <static>true</static>
+      <pose>0 0 0.005 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.001</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.2 0.2 0.2 1</ambient> <!-- Dark gray -->
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Target Cube 1 (Enlarged to 10cm) -->
     <model name="cube_1">
       <pose>1 0 0.05 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry>
             <box>
-              <size>0.05 0.05 0.05</size>
+              <size>0.1 0.1 0.1</size>
             </box>
           </geometry>
         </collision>
         <visual name="visual">
           <geometry>
             <box>
-              <size>0.05 0.05 0.05</size>
+              <size>0.1 0.1 0.1</size>
             </box>
           </geometry>
           <material>
             <ambient>1 0 0 1</ambient> <!-- Red cube -->
           </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- =============== Arena Walls (5m x 5m) =============== -->
+    
+    <!-- North Wall -->
+    <model name="wall_north">
+      <static>true</static>
+      <pose>2.5 0 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.1 5.0 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.1 5.0 0.5</size></box></geometry>
+          <material><ambient>0.7 0.7 0.7 1</ambient></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- South Wall -->
+    <model name="wall_south">
+      <static>true</static>
+      <pose>-2.5 0 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.1 5.0 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.1 5.0 0.5</size></box></geometry>
+          <material><ambient>0.7 0.7 0.7 1</ambient></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- East Wall -->
+    <model name="wall_east">
+      <static>true</static>
+      <pose>0 2.5 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>5.0 0.1 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>5.0 0.1 0.5</size></box></geometry>
+          <material><ambient>0.7 0.7 0.7 1</ambient></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- West Wall -->
+    <model name="wall_west">
+      <static>true</static>
+      <pose>0 -2.5 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>5.0 0.1 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>5.0 0.1 0.5</size></box></geometry>
+          <material><ambient>0.7 0.7 0.7 1</ambient></material>
         </visual>
       </link>
     </model>
