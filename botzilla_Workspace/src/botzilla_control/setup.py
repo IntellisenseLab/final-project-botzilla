@@ -17,13 +17,10 @@ setup(
     maintainer_email='hirunamalavipathirana.333@gmail.com',
     description='TODO: Package description',
     license='TODO: License declaration',
-    extras_require={
-        'test': [
-            'pytest',
-        ],
-    },
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'kobuki_base_node = botzilla_control.kobuki_base_node:main'
         ],
     },
 )
