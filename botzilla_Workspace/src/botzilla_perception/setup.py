@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'kinect_bridge = botzilla_perception.kinect_bridge:main'
+            'kinect_bridge = botzilla_perception.kinect_bridge:main',
+            'yolo_node = botzilla_perception.yolo_node:main'
         ],
     },
 )
