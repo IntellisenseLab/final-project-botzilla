@@ -19,24 +19,23 @@ class KinectBridge(Node):
 
     def timer_callback(self):
         try:
-            # 1. Fetch RGB Video from Kinect
-            rgb_frame, _ = freenect.sync_get_video()
-            if rgb_frame is not None:
-                # Convert RGB to BGR for OpenCV
-                rgb_frame = cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR)
-                ros_rgb = self.bridge.cv2_to_imgmsg(rgb_frame, encoding="bgr8")
-                self.publisher_rgb.publish(ros_rgb)
+            # 1. Fetch RGB ONLY if a node (rqt or YOLO) is subscribing to it
+            if self.publisher_rgb.get_subscription_count() > 0:
+                rgb_frame, _ = freenect.sync_get_video()
+                if rgb_frame is not None:
+                    rgb_frame = cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR)
+                    ros_rgb = self.bridge.cv2_to_imgmsg(rgb_frame, encoding="bgr8")
+                    self.publisher_rgb.publish(ros_rgb)
 
-            # 2. Fetch Depth Video from Kinect
-            depth_frame, _ = freenect.sync_get_depth()
-            if depth_frame is not None:
-                # Convert 11-bit depth to 8-bit visual map so YOLO/Rviz can see it easily
-                depth_8bit = depth_frame.astype(np.uint8)
-                ros_depth = self.bridge.cv2_to_imgmsg(depth_8bit, encoding="mono8")
-                self.publisher_depth.publish(ros_depth)
+            # 2. Fetch Depth ONLY if a node is subscribing to it
+            if self.publisher_depth.get_subscription_count() > 0:
+                depth_frame, _ = freenect.sync_get_depth()
+                if depth_frame is not None:
+                    depth_8bit = depth_frame.astype(np.uint8)
+                    ros_depth = self.bridge.cv2_to_imgmsg(depth_8bit, encoding="mono8")
+                    self.publisher_depth.publish(ros_depth)
 
         except TypeError:
-            # This happens if freenect isn't fully initialized yet on the first frame
             pass
         except Exception as e:
             self.get_logger().error(f'Kinect read error: {e}')
@@ -47,11 +46,11 @@ def main(args=None):
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        node.get_logger().info("Shutting down Kinect bridge...")
+        node.get_logger().info("Shutting down Kinect bridge cleanly...")
     finally:
-        # freenect.sync_stop() # Optional safety cleanup
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
