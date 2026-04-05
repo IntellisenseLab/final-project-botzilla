@@ -14,16 +14,13 @@ setup(
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='hiruna',
-    maintainer_email='hirunamalavipathirana.333@gmail.com',
-    description='TODO: Package description',
+    maintainer_email='hiruna@todo.todo',
+    description='YOLO and Kinect perception for BotZilla',
     license='TODO: License declaration',
-    extras_require={
-        'test': [
-            'pytest',
-        ],
-    },
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'kinect_bridge = botzilla_perception.kinect_bridge:main'
         ],
     },
 )

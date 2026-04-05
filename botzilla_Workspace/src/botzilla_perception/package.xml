@@ -3,13 +3,16 @@
 <package format="3">
   <name>botzilla_perception</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>YOLO and Kinect perception for BotZilla</description>
   <maintainer email="hirunamalavipathirana.333@gmail.com">hiruna</maintainer>
   <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
 
   <depend>rclpy</depend>
   <depend>sensor_msgs</depend>
   <depend>cv_bridge</depend>
+  <depend>std_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
