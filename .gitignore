@@ -18,3 +18,5 @@ botzilla_Workspace/log/
 # OS
 .DS_Store
 Thumbs.db
+
+/myenv/

@@ -3,7 +3,7 @@ import time
 
 
 def main():
-    my_kobuki = kobuki.Kobuki()
+    my_kobuki = kobuki.Kobuki() 
 
     # Play start up sound
     #   my_kobuki.play_on_sound()
