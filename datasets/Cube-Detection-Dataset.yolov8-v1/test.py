@@ -17,7 +17,7 @@ while True:
         break
 
     # Run YOLO detection
-    results = model(frame, conf=0.25)
+    results = model(frame, conf=0.90, iou=0.45, classes=[1])
 
     # Draw detections
     annotated_frame = results[0].plot()
