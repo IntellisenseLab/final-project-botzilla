@@ -1,6 +1,7 @@
-train: ../train/images
-val: ../valid/images
-test: ../test/images
+path: /home/kalana/Documents/final-project-botzilla/datasets/Cube-Detection-Dataset.yolov8-v1
+train: train/images
+val: valid/images
+test: test/images
 
 nc: 2
 names: ['Cube-Detection-Dataset', 'cube']
