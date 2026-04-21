@@ -48,7 +48,7 @@
 
     <!-- Target Cube 1 (Enlarged to 10cm) -->
     <model name="cube_1">
-      <pose>1 0 0.05 0 0 0</pose>
+      <pose>1.5 1.5 0.05 0 0 0</pose> <!-- Changed from 1 0 0.05 -->
       <link name="link">
         <collision name="collision">
           <geometry>
