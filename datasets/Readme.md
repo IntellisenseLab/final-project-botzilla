@@ -6,7 +6,7 @@
     !pip install roboflow
 
     from roboflow import Roboflow
-    rf = Roboflow(api_key="ReeIH4uTzRmmKoEc5UgQ")
+    rf = Roboflow(api_key="###########")
     project = rf.workspace("botzillaiesl-robo-games").project("Cube-Detection-Dataset")
     dataset = project.version(1).download("yolov8")
 

@@ -2,7 +2,7 @@
 __pycache__/
 *.pyc
 *.pyo
-venv/
+.venv/
 .env
 
 # ROS 2 Workspace
@@ -20,4 +20,10 @@ botzilla_Workspace/log/
 Thumbs.db
 
 /myenv/
-datasets/
+
+# datasets 
+datasets/Cube-Detection-Dataset-3/test/images/
+datasets/Cube-Detection-Dataset-3/train/images/
+datasets/Cube-Detection-Dataset-3/valid/images/
+datasets/vids/
+
