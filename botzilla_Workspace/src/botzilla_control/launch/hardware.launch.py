@@ -32,6 +32,13 @@ def generate_launch_description():
         output='screen',
     )
 
+    apriltag_node = Node(
+        package='botzilla_perception',
+        executable='apriltag_node',
+        name='apriltag_node',
+        output='screen',
+    )
+
     brain_node = Node(
         package='botzilla_control',
         executable='brain_node',
@@ -43,5 +50,6 @@ def generate_launch_description():
         kobuki_base,
         kinect_bridge,
         yolo_node,
+        apriltag_node,
         brain_node,
     ])

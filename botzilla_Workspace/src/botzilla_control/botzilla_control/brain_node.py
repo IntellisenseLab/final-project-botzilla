@@ -45,10 +45,13 @@ class BotzillaBrain(Node):
         self._phase_timer = None   # rclpy.time
         self._cube_last_seen = self.get_clock().now()
 
+        self.drop_off_pose = None   # Point: x=normalized offset from apriltag_node
+
         self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
 
         self.create_subscription(Point, 'detected_cube', self.cube_callback, 10)
         self.create_subscription(Bool, 'drop_off_visible', self.drop_off_callback, 10)
+        self.create_subscription(Point, 'drop_off_pose', self.drop_off_pose_callback, 10)
 
         self.timer = self.create_timer(0.1, self.control_loop)  # 10 Hz
 
@@ -67,6 +70,10 @@ class BotzillaBrain(Node):
     def drop_off_callback(self, msg):
         """Receives whether the AprilTag drop-off marker is visible."""
         self.drop_off_visible = msg.data
+
+    def drop_off_pose_callback(self, msg):
+        """Receives normalized horizontal offset of the drop-off AprilTag."""
+        self.drop_off_pose = msg
 
     # ---- State Machine ----
 
@@ -118,13 +125,23 @@ class BotzillaBrain(Node):
             else:
                 self._transition("DELIVERING", "Cube captured! Looking for drop-off zone.")
 
-        # ── DELIVERING: drive toward drop-off zone ──
+        # ── DELIVERING: steer toward AprilTag drop-off marker ──
         elif self.state == "DELIVERING":
             elapsed = self._elapsed_since(now)
             if elapsed < DELIVER_TIME_S:
                 msg.linear.x = DELIVER_SPEED
-                # Optional AprilTag correction could go here: read drop_off_visible
-                self.get_logger().debug(f"DELIVERING: {elapsed:.1f}/{DELIVER_TIME_S}s")
+                if self.drop_off_visible and self.drop_off_pose is not None:
+                    # Proportional correction: steer toward the tag center
+                    error_x = self.drop_off_pose.x  # normalized: -1 left, +1 right
+                    msg.angular.z = -KP_ANGULAR * 0.5 * error_x
+                    self.get_logger().debug(
+                        f"DELIVERING (guided): elapsed={elapsed:.1f}s, tag_offset={error_x:.2f}"
+                    )
+                else:
+                    # Tag not visible yet: drive straight (blind)
+                    self.get_logger().debug(
+                        f"DELIVERING (blind): elapsed={elapsed:.1f}/{DELIVER_TIME_S}s"
+                    )
             else:
                 self._transition("DETACHING", "Arrived at drop-off zone. Reversing.")
 
