@@ -9,20 +9,8 @@ import numpy as np
 import os
 from ultralytics import YOLO
 
-current_dir = os.path.dirname(__file__)
-
-file_path = os.path.abspath(
-    os.path.join(
-        current_dir,
-        "..", "..",
-        "datasets",
-        "runs",
-        "detect",
-        "train",
-        "weights",
-        "best.pt"
-    )
-)
+# Use absolute path to ensure weights are found regardless of where the node is launched from
+file_path = "/home/hiruna/Desktop/projects/Robotics_and_Automation/FinalProject/final-project-botzilla/datasets/runs/detect/train/weights/best.pt"
 
 # Kinect minimum sensing range (objects closer become 0 or invalid)
 KINECT_MIN_RANGE_M = 0.55
@@ -30,6 +18,7 @@ KINECT_MIN_RANGE_M = 0.55
 class YoloDetector(Node):
     def __init__(self):
         super().__init__('yolo_node')
+        self.frame_count = 0
 
         self.bridge = cv_bridge.CvBridge()
         self.latest_depth = None  # Raw float32 depth frame (480x640), values in mm
@@ -87,11 +76,16 @@ class YoloDetector(Node):
         if len(valid) == 0:
             return None
 
-        # kinect_bridge encodes depth as mono8: values 0-255 scale.
-        # To map back to meters: the Kinect raw depth is ~0-4000 mm, scaled to uint8 as (raw/4000*255)
-        # Reverse: meters = (median_value / 255.0) * 4.0
+        # Reverse the kinect_bridge scaling: uint8 0-255 was scaled from 11-bit 0-2047.
+        # raw_11bit = (value / 255.0) * 2047.0
+        # Convert raw 11-bit Kinect value to meters using the standard disparity formula:
+        # depth_m = 1.0 / (raw_11bit * -0.0030711016 + 3.3309495161)
         raw_val = np.median(valid)
-        distance_m = (raw_val / 255.0) * 4.0
+        raw_11bit = (raw_val / 255.0) * 2047.0
+        if raw_11bit >= 2040:  # Kinect reports 2047 for no-data pixels
+            return None
+        # Standard Kinect disparity → depth formula
+        distance_m = 1.0 / (raw_11bit * -0.0030711016 + 3.3309495161)
         return distance_m
 
     def image_callback(self, msg):
@@ -100,8 +94,12 @@ class YoloDetector(Node):
             img_h, img_w = cv_image.shape[:2]
             img_center_x = img_w / 2.0
 
-            # Run YOLO inference
-            results = self.model.predict(source=cv_image, conf=0.5, verbose=False)
+            self.frame_count += 1
+            if self.frame_count % 30 == 0:
+                self.get_logger().info(f'Processing frame #{self.frame_count}. Latest depth: {"Received" if self.latest_depth is not None else "None"}')
+
+            # Run YOLO inference – lower confidence for better detection rate
+            results = self.model.predict(source=cv_image, conf=0.35, verbose=False)
 
             annotated_image = results[0].plot()
 
@@ -144,6 +142,7 @@ class YoloDetector(Node):
                 cube_msg.y = 0.0             # unused
                 cube_msg.z = best_cube[0]    # distance in meters (0.0 = blind-spot/captured range)
                 self.cube_pub.publish(cube_msg)
+                self.get_logger().info(f'[PUBLISH] detected_cube: x={cube_msg.x:.2f}, z={cube_msg.z:.2f}m', throttle_duration_sec=1.0)
 
             # Publish annotated image for debugging
             ros_annotated = self.bridge.cv2_to_imgmsg(annotated_image, encoding='bgr8')

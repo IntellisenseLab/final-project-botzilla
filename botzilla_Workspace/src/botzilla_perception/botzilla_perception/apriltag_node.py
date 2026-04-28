@@ -29,7 +29,8 @@ class AprilTagNode(Node):
         # ArUco detector setup
         self.aruco_dict = aruco.getPredefinedDictionary(APRILTAG_DICT)
         self.aruco_params = aruco.DetectorParameters()
-        self.detector = aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
+        # Older OpenCV versions (pre-4.7) do not have ArucoDetector class.
+        # We will use the legacy aruco.detectMarkers() function below.
 
         # Subscribe to Kinect RGB stream
         self.subscription = self.create_subscription(
@@ -62,8 +63,8 @@ class AprilTagNode(Node):
             img_h, img_w = cv_image.shape[:2]
             img_center_x = img_w / 2.0
 
-            # Detect all AprilTag markers in the frame
-            corners, ids, _ = self.detector.detectMarkers(gray)
+            # Detect all AprilTag markers using legacy API (OpenCV < 4.7)
+            corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict, parameters=self.aruco_params)
 
             visible_msg = Bool()
             found = False
@@ -108,8 +109,8 @@ class AprilTagNode(Node):
             ros_debug = self.bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')
             self.debug_pub.publish(ros_debug)
 
-            cv2.imshow('AprilTag Debug View', cv_image)
-            cv2.waitKey(1)
+            # cv2.imshow('AprilTag Debug View', cv_image)
+            # cv2.waitKey(1)
 
         except cv_bridge.CvBridgeError as e:
             self.get_logger().error(f'CvBridge Error: {e}')
