@@ -10,6 +10,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', ['launch/botzilla_laptop.launch.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -21,7 +22,8 @@ setup(
     entry_points={
         'console_scripts': [
             'kinect_bridge = botzilla_perception.kinect_bridge:main',
-            'yolo_node = botzilla_perception.yolo_node:main'
+            'webcam_bridge = botzilla_perception.webcam_bridge:main',
+            'yolo_node = botzilla_perception.yolo_node:main',
         ],
     },
 )

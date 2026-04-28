@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'kobuki_base_node = botzilla_control.kobuki_base_node:main'
+            'kobuki_base_node = botzilla_control.kobuki_base_node:main',
+            'mock_kobuki_node = botzilla_control.mock_kobuki_node:main',
         ],
     },
 )
