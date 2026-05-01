@@ -21,7 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'kinect_bridge = botzilla_perception.kinect_bridge:main',
-            'yolo_node = botzilla_perception.yolo_node:main'
+            'yolo_node = botzilla_perception.yolo_node:main',
+            'apriltag_node = botzilla_perception.apriltag_node:main'
         ],
     },
 )

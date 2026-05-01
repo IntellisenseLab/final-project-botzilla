@@ -185,46 +185,32 @@ class Kobuki:
         return True
 
     def move(self, left_velocity, right_velocity, rotate):
-        if rotate == 0:
-            botspeed = (left_velocity + right_velocity) / 2
-            if left_velocity == right_velocity:
-                botradius = 0
+        cs = 0
+        barr = bytearray([170, 85, 6, 1, 4])
+        
+        if rotate == 1:
+            # PURE ROTATION: Radius = 1 (CCW) or -1 (CW)
+            # Speed is the tangential speed of the wheels
+            botspeed = abs(right_velocity - left_velocity) / 2.0
+            botradius = 1 if (right_velocity - left_velocity) > 0 else -1
+            print(f"ROTATE -> speed: {botspeed}, radius: {botradius}")
+        else:
+            # TRANSLATION / ARC: Radius = (L+R)/(R-L) * (W/2)
+            botspeed = (left_velocity + right_velocity) / 2.0
+            if abs(right_velocity - left_velocity) < 0.001:
+                botradius = 0 # Straight
             else:
-                botradius = (230 * (left_velocity + right_velocity)) / (
-                    2 * (right_velocity - left_velocity)
-                )
-            # self.base_control(int(botspeed),int(botradius))
-            cs = 0
-            barr = bytearray([170, 85, 6, 1, 4])
-
-            barr += int(botspeed).to_bytes(2, byteorder="little", signed=True)
-
-            barr += int(botradius).to_bytes(2, byteorder="little", signed=True)
-            for i in range(2, len(barr) - 1):
-                cs = cs ^ barr[i]
-            barr += cs.to_bytes(1, byteorder="big")
-            Kobuki.seri.write(barr)
-        elif rotate == 1:
-            botspeed = (left_velocity + right_velocity) / 2
-
-            print("botspeed: ", botspeed)
-            if left_velocity == right_velocity:
-                botradius = 0
-            else:
-                botradius = (230 * (left_velocity + right_velocity)) / (
-                    2 * (right_velocity - left_velocity)
-                )
-
-            cs = 0
-            barr = bytearray([170, 85, 6, 1, 4])
-
-            barr += int(botspeed).to_bytes(2, byteorder="little", signed=True)
-
-            barr += int(botradius).to_bytes(2, byteorder="little", signed=True)
-            for i in range(2, len(barr) - 1):
-                cs = cs ^ barr[i]
-            barr += cs.to_bytes(1, byteorder="big")
-            Kobuki.seri.write(barr)
+                botradius = (230.0 * (left_velocity + right_velocity)) / (2.0 * (right_velocity - left_velocity))
+            
+        barr += int(botspeed).to_bytes(2, byteorder="little", signed=True)
+        barr += int(botradius).to_bytes(2, byteorder="little", signed=True)
+        
+        for i in range(2, len(barr)):
+            cs = cs ^ barr[i]
+        barr += cs.to_bytes(1, byteorder="big")
+        
+        Kobuki.seri.write(barr)
+        return True
 
     def read_data():
         while 1:
