@@ -8,6 +8,7 @@ SEARCH_ROTATION_SPEED = 0.3
 FOLLOW_LINEAR_SPEED = 0.08
 KP_ANGULAR = 0.6
 ALIGNMENT_THRESHOLD = 0.1  # normalized units
+STOP_HEIGHT = 300      # pixel height when we should stop (approx 0.4-0.5m)
 
 class TagFollower(Node):
     def __init__(self):
@@ -41,20 +42,27 @@ class TagFollower(Node):
             msg.linear.x = 0.0
             self.get_logger().info("SEARCHING: Rotating to find Tag...", throttle_duration_sec=2.0)
         else:
-            self.state = "FOLLOWING"
             if self.tag_pose is not None:
                 error_x = self.tag_pose.x  # -1.0 to 1.0
+                tag_height = self.tag_pose.z
                 
-                # Steer toward center
-                msg.angular.z = -KP_ANGULAR * error_x
-                
-                # Only move forward if somewhat aligned
-                if abs(error_x) < ALIGNMENT_THRESHOLD * 2:
-                    msg.linear.x = FOLLOW_LINEAR_SPEED
-                    self.get_logger().info(f"FOLLOWING: Tag detected! x={error_x:.2f}. Moving forward.", throttle_duration_sec=2.0)
-                else:
+                if tag_height > STOP_HEIGHT:
+                    self.state = "ARRIVED"
                     msg.linear.x = 0.0
-                    self.get_logger().info(f"ALIGNING: Centering on Tag (offset={error_x:.2f})", throttle_duration_sec=2.0)
+                    msg.angular.z = 0.0
+                    self.get_logger().info(f"ARRIVED: Tag is close (height={tag_height:.1f}). Stopping.", throttle_duration_sec=2.0)
+                else:
+                    self.state = "FOLLOWING"
+                    # Steer toward center
+                    msg.angular.z = -KP_ANGULAR * error_x
+                    
+                    # Only move forward if somewhat aligned
+                    if abs(error_x) < ALIGNMENT_THRESHOLD * 2:
+                        msg.linear.x = FOLLOW_LINEAR_SPEED
+                        self.get_logger().info(f"FOLLOWING: x={error_x:.2f}, height={tag_height:.1f}", throttle_duration_sec=2.0)
+                    else:
+                        msg.linear.x = 0.0
+                        self.get_logger().info(f"ALIGNING: Centering on Tag (offset={error_x:.2f})", throttle_duration_sec=2.0)
         
         self.cmd_pub.publish(msg)
 

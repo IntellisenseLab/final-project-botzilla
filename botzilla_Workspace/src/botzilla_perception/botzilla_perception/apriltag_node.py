@@ -88,6 +88,7 @@ class AprilTagNode(Node):
                             if tag_id in TARGET_TAG_IDS:
                                 found = True
                                 # Get the center of the detected tag
+                                # Get the center of the detected tag
                                 tag_corners = corners[idx][0]
                                 cx = int(np.mean(tag_corners[:, 0]))
                                 cy = int(np.mean(tag_corners[:, 1]))
@@ -97,12 +98,17 @@ class AprilTagNode(Node):
                                     cx = img_w - cx
                                     self.get_logger().warn("MIRROR EFFECT DETECTED! Un-flipping coordinates.")
 
+                                # Estimate tag height in pixels (average of left and right sides)
+                                tag_h_l = np.linalg.norm(tag_corners[0] - tag_corners[3])
+                                tag_h_r = np.linalg.norm(tag_corners[1] - tag_corners[2])
+                                tag_height = (tag_h_l + tag_h_r) / 2.0
+
                                 # Normalized horizontal offset: -1.0 (left) to +1.0 (right)
                                 norm_x = (cx - img_center_x) / img_center_x
                                 pos_msg = Point()
                                 pos_msg.x = norm_x
                                 pos_msg.y = float(cy)
-                                pos_msg.z = 0.0
+                                pos_msg.z = float(tag_height)
                                 self.drop_off_pos_pub.publish(pos_msg)
 
                                 # Draw debug overlay
