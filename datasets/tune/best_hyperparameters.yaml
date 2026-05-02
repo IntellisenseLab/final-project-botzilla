@@ -1,0 +1,31 @@
+# 10/10 iterations complete ✅ (4435.62s)
+# Results saved to /media/nilum/New_Volume/01.projects/Dataset-cubes/runs/tune
+# Best fitness=0.78577 observed at iteration 7
+# Best fitness metrics are {'metrics/precision(B)': 0.96771, 'metrics/recall(B)': 0.99908, 'metrics/mAP50(B)': 0.99306, 'metrics/mAP50-95(B)': 0.78577, 'val/box_loss': 0.98679, 'val/cls_loss': 0.64826, 'val/dfl_loss': 1.33658, 'fitness': 0.78577}
+# Best fitness model is /media/nilum/New_Volume/01.projects/Dataset-cubes/runs/tune/weights
+lr0: 0.00707
+lrf: 0.02035
+momentum: 0.87918
+weight_decay: 0.00061
+warmup_epochs: 4.11238
+warmup_momentum: 0.95
+box: 8.55563
+cls: 0.79373
+cls_pw: 0.00235
+dfl: 1.87478
+hsv_h: 0.0014
+hsv_s: 0.84899
+hsv_v: 0.46481
+degrees: 0.00753
+translate: 0.08613
+scale: 0.49322
+shear: 0.00475
+perspective: 0.001
+flipud: 0.00108
+fliplr: 0.57869
+bgr: 0.01511
+mosaic: 0.78098
+mixup: 0.19285
+cutmix: 0.01733
+copy_paste: 0.00251
+close_mosaic: 10
