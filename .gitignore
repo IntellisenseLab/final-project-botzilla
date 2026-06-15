@@ -22,7 +22,7 @@ Thumbs.db
 /myenv/
 
 # datasets 
-datasets/Cube-Detection-Dataset*/
-datasets/runs/
+datasets/Cube-Dgit pull --no-rebaseetection-Dataset*/
+datasets/runs/detect/
 datasets/vids/
 
