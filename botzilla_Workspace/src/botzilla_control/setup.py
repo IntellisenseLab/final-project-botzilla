@@ -1,3 +1,5 @@
+import os
+from glob import glob
 from setuptools import find_packages, setup
 
 package_name = 'botzilla_control'
@@ -10,6 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -20,7 +23,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'kobuki_base_node = botzilla_control.kobuki_base_node:main'
+            'kobuki_base_node = botzilla_control.kobuki_base_node:main',
+            'brain_node = botzilla_control.brain_node:main',
+            'perception_simulator = botzilla_control.perception_simulator:main',
+            'tag_follower_node = botzilla_control.tag_follower_node:main'
         ],
     },
 )

@@ -34,8 +34,10 @@ class KinectBridge(Node):
         self.new_rgb_available = True
 
     def depth_cb(self, dev, data, timestamp):
-        self.latest_depth = data.astype(np.uint8).tobytes()
-        self.new_depth_available = True
+        # data is uint16 with 11-bit depth values (0-2047). 2047 = no data.
+        # Properly scale to 0-255 for mono8 transport (do NOT truncate via astype).
+        scaled = (data.astype(np.float32) / 2047.0 * 255.0).astype(np.uint8)
+        self.latest_depth = scaled.tobytes()
 
     def run_camera_loop(self):
         try:
