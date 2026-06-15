@@ -10,7 +10,7 @@ import os
 from ultralytics import YOLO
 
 # Use absolute path to ensure weights are found regardless of where the node is launched from
-file_path = "/home/hiruna/Desktop/projects/Robotics_and_Automation/FinalProject/final-project-botzilla/datasets/runs/detect/train/weights/best.pt"
+file_path = "/home/hiruna/Desktop/projects/Robotics_and_Automation/FinalProject/final-project-botzilla/runs/best-fit/best.pt"
 
 # Kinect minimum sensing range (objects closer become 0 or invalid)
 KINECT_MIN_RANGE_M = 0.55
@@ -99,7 +99,7 @@ class YoloDetector(Node):
                 self.get_logger().info(f'Processing frame #{self.frame_count}. Latest depth: {"Received" if self.latest_depth is not None else "None"}')
 
             # Run YOLO inference – lower confidence for better detection rate
-            results = self.model.predict(source=cv_image, conf=0.35, verbose=False)
+            results = self.model.predict(source=cv_image, conf = 0.8, verbose=False, iou=0.5)
 
             annotated_image = results[0].plot()
 
