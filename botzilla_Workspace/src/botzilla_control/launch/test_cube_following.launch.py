@@ -32,8 +32,8 @@ def generate_launch_description():
 
     brain_node = Node(
         package='botzilla_control',
-        executable='brain_node',
-        name='botzilla_brain',
+        executable='cube_collector',
+        name='cube_collector',
         output='screen',
     )
 

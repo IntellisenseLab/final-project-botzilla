@@ -25,6 +25,7 @@ setup(
         'console_scripts': [
             'kobuki_base_node = botzilla_control.kobuki_base_node:main',
             'brain_node = botzilla_control.brain_node:main',
+            'cube_collector = botzilla_control.cube_collector:main',
             'perception_simulator = botzilla_control.perception_simulator:main',
             'tag_follower_node = botzilla_control.tag_follower_node:main'
         ],
