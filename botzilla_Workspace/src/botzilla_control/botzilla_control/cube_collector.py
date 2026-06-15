@@ -16,16 +16,28 @@ class CubeCollector(Node):
     def __init__(self):
         super().__init__('cube_collector')
 
-        self.state = "SEARCHING"
+        self.state = "IDLE"  # Start by doing nothing
         self.target_cube = None
         self._phase_timer = None
         self._cube_last_seen = self.get_clock().now()
+        self._vision_ready = False
 
         self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
         self.create_subscription(Point, 'detected_cube', self.cube_callback, 10)
+        
+        # Monitor the debug image to know when the camera is actually sending data
+        from sensor_msgs.msg import Image
+        self.create_subscription(Image, '/perception/yolo_image', self.vision_heartbeat_cb, 10)
 
         self.timer = self.create_timer(0.1, self.control_loop)
-        self.get_logger().info("Cube Collector Node Started. SEARCHING for cubes...")
+        self.get_logger().info("Cube Collector Node Started. Waiting for Kinect initialization...")
+
+    def vision_heartbeat_cb(self, msg):
+        if not self._vision_ready:
+            self.get_logger().info("Vision Pipeline detected! Starting search rotation.")
+            self._vision_ready = True
+            if self.state == "IDLE":
+                self.state = "SEARCHING"
 
     def cube_callback(self, msg):
         self.target_cube = msg
@@ -38,13 +50,19 @@ class CubeCollector(Node):
         msg = Twist()
         now = self.get_clock().now()
 
-        if self.state == "SEARCHING":
-            msg.angular.z = 0.4
+        if self.state == "IDLE":
+            # Stay completely still
+            msg.linear.x = 0.0
+            msg.angular.z = 0.0
+
+        elif self.state == "SEARCHING":
+            # Reduced rotation speed for better stability
+            msg.angular.z = 0.25 
 
         elif self.state == "TARGETING":
             if self._cube_timed_out(now):
                 self._transition("SEARCHING", "Cube lost.")
-            elif self.target_cube:
+            elif self.target_cube is not None:
                 error_x = self.target_cube.x
                 if abs(error_x) > ALIGNMENT_THRESHOLD:
                     msg.angular.z = -KP_ANGULAR * error_x
@@ -54,7 +72,7 @@ class CubeCollector(Node):
         elif self.state == "APPROACHING":
             if self._cube_timed_out(now):
                 self._transition("SEARCHING", "Cube lost.")
-            elif self.target_cube:
+            elif self.target_cube is not None:
                 msg.angular.z = -KP_ANGULAR * 0.5 * self.target_cube.x
                 if self.target_cube.z == 0.0:
                     self._transition("CAPTURING", "In blind spot. Firming capture.")

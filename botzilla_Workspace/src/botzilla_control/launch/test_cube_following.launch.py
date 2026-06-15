@@ -30,7 +30,14 @@ def generate_launch_description():
         output='screen',
     )
 
-    brain_node = Node(
+    yolo_node = Node(
+        package='botzilla_perception',
+        executable='yolo_node',
+        name='yolo_node',
+        output='screen',
+    )
+
+    cube_collector = Node(
         package='botzilla_control',
         executable='cube_collector',
         name='cube_collector',
@@ -41,5 +48,5 @@ def generate_launch_description():
         kobuki_base,
         kinect_bridge,
         yolo_node,
-        brain_node,
+        cube_collector,
     ])
