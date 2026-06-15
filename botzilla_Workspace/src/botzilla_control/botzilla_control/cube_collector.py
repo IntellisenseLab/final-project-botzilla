@@ -20,6 +20,7 @@ class CubeCollector(Node):
         self.target_cube = None
         self._phase_timer = None
         self._cube_last_seen = self.get_clock().now()
+        self._cube_lost_time = None  # Track when the box actually disappears
         self._vision_ready = False
 
         self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
@@ -80,11 +81,26 @@ class CubeCollector(Node):
                     msg.linear.x = APPROACH_SPEED
 
         elif self.state == "CAPTURING":
-            elapsed = self._elapsed_since(now)
-            if elapsed < CAPTURE_TIME_S:
-                msg.linear.x = CAPTURE_SPEED
+            # REFINED LOGIC: Drive as long as we see the box, plus 1 second after it disappears
+            CUBE_TIMEOUT_S = 0.4  # Time to wait before deciding it's "lost" from view
+            EXTRA_PUSH_S = 1.0    # Final push after loss
+            
+            # Check if we still see the cube (updates roughly at 15-30Hz)
+            if (now - self._cube_last_seen).nanoseconds / 1e9 < CUBE_TIMEOUT_S:
+                # Still visible! Reset lost time
+                self._cube_lost_time = None
+                msg.linear.x = 0.12 # CAPTURE_SPEED
             else:
-                self._transition("DONE", "Cube collected successfully! Stopping.")
+                # Box has disappeared! (Likely gone under the camera)
+                if self._cube_lost_time is None:
+                    self.get_logger().info("Cube lost from view. Performing final 1s push...")
+                    self._cube_lost_time = now
+                
+                elapsed_since_lost = (now - self._cube_lost_time).nanoseconds / 1e9
+                if elapsed_since_lost < EXTRA_PUSH_S:
+                    msg.linear.x = 0.12 # CAPTURE_SPEED
+                else:
+                    self._transition("DONE", "Capture complete! Final push finished.")
 
         elif self.state == "DONE":
             msg.linear.x = 0.0
@@ -112,9 +128,14 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
-        node.cmd_pub.publish(Twist())
-        node.destroy_node()
-        rclpy.shutdown()
+        # Check if node and publisher still exist before publishing stop command
+        if 'node' in locals() and rclpy.ok():
+            try:
+                node.cmd_pub.publish(Twist())
+            except:
+                pass
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
