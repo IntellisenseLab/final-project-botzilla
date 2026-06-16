@@ -38,6 +38,7 @@ class KinectBridge(Node):
         # Properly scale to 0-255 for mono8 transport (do NOT truncate via astype).
         scaled = (data.astype(np.float32) / 2047.0 * 255.0).astype(np.uint8)
         self.latest_depth = scaled.tobytes()
+        self.new_depth_available = True
 
     def run_camera_loop(self):
         try:

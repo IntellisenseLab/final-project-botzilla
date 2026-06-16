@@ -201,6 +201,10 @@ class Kobuki:
                 botradius = 0 # Straight
             else:
                 botradius = (230.0 * (left_velocity + right_velocity)) / (2.0 * (right_velocity - left_velocity))
+                # CLIP RADIUS: Prevent OverflowError for nearly straight paths
+                # Kobuki protocol uses signed 2-byte integer for radius. Max 32767.
+                if botradius > 32767: botradius = 32767
+                if botradius < -32768: botradius = -32768
             
         barr += int(botspeed).to_bytes(2, byteorder="little", signed=True)
         barr += int(botradius).to_bytes(2, byteorder="little", signed=True)
