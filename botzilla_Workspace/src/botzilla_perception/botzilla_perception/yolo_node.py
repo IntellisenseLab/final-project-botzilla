@@ -9,8 +9,22 @@ import numpy as np
 import os
 from ultralytics import YOLO
 
-# Use absolute path to ensure weights are found regardless of where the node is launched from
-file_path = "/home/hiruna/Desktop/projects/Robotics_and_Automation/FinalProject/final-project-botzilla/runs/best-fit/best.pt"
+# Use an override when testing new weights, otherwise fall back to this repo.
+file_path = os.environ.get(
+    'BOTZILLA_YOLO_MODEL',
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            '..',
+            '..',
+            '..',
+            'runs',
+            'best-fit',
+            'best.pt',
+        )
+    ),
+)
 
 # Kinect minimum sensing range (objects closer become 0 or invalid)
 KINECT_MIN_RANGE_M = 0.55
@@ -19,6 +33,7 @@ class YoloDetector(Node):
     def __init__(self):
         super().__init__('yolo_node')
         self.frame_count = 0
+        self._blind_spot_candidate_frames = 0
 
         self.bridge = cv_bridge.CvBridge()
         self.latest_depth = None  # Raw float32 depth frame (480x640), values in mm
@@ -96,7 +111,11 @@ class YoloDetector(Node):
 
             self.frame_count += 1
             if self.frame_count % 30 == 0:
-                self.get_logger().info(f'Processing frame #{self.frame_count}. Latest depth: {"Received" if self.latest_depth is not None else "None"}')
+                depth_status = 'Received' if self.latest_depth is not None else 'None'
+                self.get_logger().info(
+                    f'Processing frame #{self.frame_count}. '
+                    f'Latest depth: {depth_status}'
+                )
 
             # Run YOLO inference – lower confidence for better detection rate
             results = self.model.predict(source=cv_image, conf = 0.8, verbose=False, iou=0.5)
@@ -121,9 +140,10 @@ class YoloDetector(Node):
                     if self.latest_depth is not None:
                         dist_m = self.get_depth_at(cx, cy, self.latest_depth)
 
-                    # If depth is invalid/too close, mark the cube as "captured" range
+                    # If depth is invalid/too close, mark it as a blind-spot candidate.
                     if dist_m is None or dist_m < KINECT_MIN_RANGE_M:
-                        dist_m = 0.0  # Signal to brain: cube is in blind spot (already captured vicinity)
+                        # Signal to brain: cube is in blind spot/capture vicinity.
+                        dist_m = 0.0
 
                     # Pick the closest cube
                     if dist_m < best_dist or (dist_m == 0.0 and best_cube is None):
@@ -137,12 +157,30 @@ class YoloDetector(Node):
 
             # Publish the best (closest) detected cube
             if best_cube is not None:
+                if best_cube[0] == 0.0:
+                    self._blind_spot_candidate_frames += 1
+                    if self._blind_spot_candidate_frames < 3:
+                        ros_annotated = self.bridge.cv2_to_imgmsg(
+                            annotated_image,
+                            encoding='bgr8',
+                        )
+                        self.publisher_annotated.publish(ros_annotated)
+                        return
+                else:
+                    self._blind_spot_candidate_frames = 0
+
                 cube_msg = Point()
                 cube_msg.x = best_cube[1]    # normalized horizontal offset
                 cube_msg.y = 0.0             # unused
                 cube_msg.z = best_cube[0]    # distance in meters (0.0 = blind-spot/captured range)
                 self.cube_pub.publish(cube_msg)
-                self.get_logger().info(f'[PUBLISH] detected_cube: x={cube_msg.x:.2f}, z={cube_msg.z:.2f}m', throttle_duration_sec=1.0)
+                self.get_logger().info(
+                    f'[PUBLISH] detected_cube: x={cube_msg.x:.2f}, '
+                    f'z={cube_msg.z:.2f}m',
+                    throttle_duration_sec=1.0,
+                )
+            else:
+                self._blind_spot_candidate_frames = 0
 
             # Publish annotated image for debugging
             ros_annotated = self.bridge.cv2_to_imgmsg(annotated_image, encoding='bgr8')
