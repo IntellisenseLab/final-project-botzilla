@@ -1,4 +1,4 @@
-# 🤖 BotZilla — Autonomous Object Detection, Collection & Placement Robot
+# BotZilla: An Autonomous Object Detection, Collection & Placement Robot
 
 <div align="center">
 
@@ -8,7 +8,7 @@
 ![Raspberry Pi](https://img.shields.io/badge/Raspberry_Pi_4-4GB-C51A4A?style=for-the-badge&logo=raspberrypi&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-**CS3340 — Robotics and Automation | University of Moratuwa**
+**CS3340 - Robotics and Automation | Computer Science and Engineering, University of Moratuwa**
 
 *An autonomous mobile robot that detects, collects, and places cubes using YOLO-based vision and RGB-D sensing on the Kobuki QBot platform.*
 
@@ -16,40 +16,24 @@
 
 ---
 
-## 📖 Overview
+## 1. Overview
 
-In this final project we are building robot(Kobuki-Qbot) that operates in a controlled indoor environment. Starting from a charging station, the robot searches for cubes, collects them using a maipulator arm, deposits them in a designated drop-off zone, and returns to dock — all without human intervention.
+In this final project we are building robot(Kobuki-Qbot) that operates in a controlled indoor environment. Starting from a charging station(middle of the arena), the robot searches for cubes, collects them using a maipulator arm, deposits them in a designated drop-off zone, and returns to dock, all without human intervention.
 
 The project is motivated by real-world applications such as:
-- 📦 Automated sorting in logistics warehouses
-- ☢️ Debris clearance in hazardous environments
-- 🏫 Educational robotics demonstrations
+- Automated sorting in logistics warehouses
+- Debris clearance in hazardous environments
+- Educational robotics demonstrations
 
 The system is built on three core robotics pillars: **Perception**, **Planning**, and **Control**, integrated via the ROS 2 framework.
 
 ---
 
-## 🏗️ System Architecture
+## 2. System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        BotZilla System                       │
-│                                                              │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐   │
-│  │  PERCEPTION  │───▶│   PLANNING   │───▶│   CONTROL    │   │
-│  │              │    │              │    │              │   │
-│  │ Xbox Kinect  │    │ State Machine│    │  Trajectory  │   │
-│  │ RGB-D Camera │    │   (SMACH)    │    │  Tracking    │   │
-│  │              │    │              │    │              │   │
-│  │ YOLOv8 Nano  │    │ Grid Search  │    │  Gripper     │   │
-│  │ PCL Fusion   │    │ Path Planning│    │  Control     │   │
-│  └──────────────┘    └──────────────┘    └──────────────┘   │
-│                                                              │
-│                   ROS 2 (Jazzy) Middleware                   │
-└─────────────────────────────────────────────────────────────┘
-```
+![Alt Text](images/image.png)
 
-### State Machine Flow
+### 3. State Machine Flow
 
 ```
 [CHARGING DOCK] ──▶ [SEARCH] ──▶ [APPROACH] ──▶ [PICK]
@@ -60,7 +44,7 @@ The system is built on three core robotics pillars: **Perception**, **Planning**
 
 ---
 
-## ⚙️ Hardware Components
+## 4. Hardware Components
 
 | Component | Details |
 |-----------|---------|
@@ -72,7 +56,7 @@ The system is built on three core robotics pillars: **Perception**, **Planning**
 
 ---
 
-## 💻 Software Stack
+## 5. Software Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -85,7 +69,7 @@ The system is built on three core robotics pillars: **Perception**, **Planning**
 
 ---
 
-## 🚀 Getting Started
+## 6. Getting Started
 
 ### Prerequisites
 
@@ -95,10 +79,14 @@ The system is built on three core robotics pillars: **Perception**, **Planning**
 - Gazebo (for simulation) 
 
 ### Installation
+Note that the rasberrypi integration in the following branch.
+
+[Click Here](insert_link_brnch) 
+
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-org>/botzilla.git
+git clone https://github.com/IntellisenseLab/final-project-botzilla
 cd botzilla
 
 # Install Python dependencies
@@ -131,56 +119,44 @@ ros2 launch botzilla botzilla_autonomy.launch.py
 
 ---
 
-## 📁 Repository Structure
+## 7. Repository Structure
 
 ```
-botzilla/
-├── test/                   # test files for kuboki moving 
-├── src/
-│   ├── perception/          # YOLOv8 detection + PCL depth fusion nodes
-│   ├── planning/            # SMACH state machine + path planning
-│   ├── control/             # Motor control + gripper scripts
-│   └── docking/             # Charging station alignment logic
-├── models/
-│   └── yolov8_cube.pt       # Trained YOLOv8 Nano model weights
-├── config/
-│   ├── kinect_calibration/  # Kinect RGB-D calibration files
-│   └── apriltag_config/     # AprilTag configuration for drop-off zone
-├── launch/
-│   ├── simulation.launch.py
-│   ├── hardware.launch.py
-│   └── botzilla_autonomy.launch.py
-├── datasets/                # Cube image datasets (see references)
-├── docs/                    # Reports, diagrams, proposal
+final-project-botzilla/           
+├── botzilla_Workspace/src/
+│   ├── botzilla_bringup/          
+│   ├── botzilla_control/           # drive base control
+│   ├── botzilla_perception/        # yolo and apriltag detection     
+│
+├── datasets/                       # Cube Dataset
+├── docs/                           # documents 
+├── runs/                    # Best Fited ML models 
 ├── tests/                   # Unit and integration tests
+├── Worlds/
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## 🎯 Expected Outcomes
+## 8. Expected Outcomes
 
-- ✅ **≥ 80% accuracy** in cube detection and localization under varying lighting conditions
-- ✅ Successful collection and placement of **all cubes** in the drop-off zone (0.5m × 0.5m)
-- ✅ Safe return to the **charging dock** after task completion
-- ✅ No fault tolerance issues with the **gripper arm** during manipulation
-
----
-
-## 📅 Project Timeline
-
-| Week | Task | Description |
-|------|------|-------------|
-| Week 08 | **Hardware Setup** | Kobuki QBot configuration and ROS 2 interface stabilisation |
-| Week 09 | **Perception Setup** | Kinect RGB-D calibration and dataset collection |
-| Week 10–12 | **Core Implementation** | Object detection, navigation, model training, iterative testing |
-| Week 13 | **Final Report** | Navigation enhancement, model accuracy improvement, report finalisation |
-| Week 14 | **Demo & Viva** | Live demonstration and Viva Voce |
+-  **≥ 80% accuracy** in cube detection and localization under varying lighting conditions
+-  Successful collection and placement of **all cubes** in the drop-off zone (0.5m × 0.5m)
+-  Safe return to the **charging dock** after task completion
+- No fault tolerance issues with the **gripper arm** during manipulation
 
 ---
 
-## 👥 Team BotZilla
+## 9. Project Timeline
+
+
+![alt text](images/image1.png)
+
+
+---
+
+## 10. Team BotZilla
 
 | Name | Index | Responsibilities |
 |------|-------|-----------------|
@@ -190,15 +166,19 @@ botzilla/
 
 ---
 
-## 📚 References
+## 11. References
 
 - [Blob Tracking using Kobuki QBot2](https://www.youtube.com/watch?v=L_A1ThF3q6Y)
-- [Raspberry Pi 4 — Setup & Getting Started](https://www.youtube.com/watch?v=2RHuDKq7ONQ)
+- [Raspberry Pi 5— Setup & Getting Started](https://www.youtube.com/watch?v=2RHuDKq7ONQ)
 - [YOLO on Raspberry Pi](https://youtu.be/z70ZrSZNi-8?si=31wIvSw6LGXEnhvU)
 - [Kobuki QBot Documentation](https://kobuki.readthedocs.io/en)
 - [Cube Dataset — Roboflow](https://universe.roboflow.com/zeynabezzati/dataset-yzhqr)
-
 ---
+## Arena Configuration 
+
+![Alt Text](images/updatedArena.png)
+
+The Arena is 300cm*300cm and the charging doc, where robot starts action, is in the middle of the arena. The robot splits arena in to 4 quadrents and those are represented using dashed lines.
 
 ## 🏛️ Affiliation
 
