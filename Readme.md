@@ -35,12 +35,8 @@ The system is built on three core robotics pillars: **Perception**, **Planning**
 
 ### 3. State Machine Flow
 
-```
-[CHARGING DOCK] ──▶ [SEARCH] ──▶ [APPROACH] ──▶ [PICK]
-                        ▲                           │
-                        │                           ▼
-                   [RETURN]  ◀──  [PLACE]  ◀── [NAVIGATE TO ZONE]
-```
+![Alt Text](images/state_machine.jpeg)
+
 
 ---
 
