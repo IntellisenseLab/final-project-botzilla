@@ -81,7 +81,7 @@ The system is built on three core robotics pillars: **Perception**, **Planning**
 ### Installation
 Note that the rasberrypi integration in the following branch.
 
-[Click Here](insert_link_brnch) 
+[Click Here](https://github.com/IntellisenseLab/final-project-botzilla/tree/test/rasberrypi) 
 
 
 ```bash
