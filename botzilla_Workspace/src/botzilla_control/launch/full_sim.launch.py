@@ -6,7 +6,8 @@ from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
-    base_proj_path = '/home/hiruna/Desktop/projects/Robotics_and_Automation/FinalProject/final-project-botzilla'
+    home = os.path.expanduser('~')
+    base_proj_path = os.path.join(home, 'Desktop/Bozilla-ws/final-project-botzilla')
     world_path = os.path.join(base_proj_path, 'worlds', 'botzilla_arena.world')
     urdf_path = os.path.join(base_proj_path, 'description', 'botzilla_qbot.urdf')
 

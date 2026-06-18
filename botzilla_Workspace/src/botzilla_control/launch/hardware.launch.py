@@ -1,5 +1,8 @@
+import os
 from launch import LaunchDescription
 from launch_ros.actions import Node
+
+_NORESET = os.path.join(os.path.expanduser('~'), 'Desktop/Bozilla-ws/final-project-botzilla/noreset.so')
 
 
 def generate_launch_description():
@@ -23,6 +26,7 @@ def generate_launch_description():
         executable='kinect_bridge',
         name='kinect_bridge',
         output='screen',
+        additional_env={'LD_PRELOAD': _NORESET},
     )
 
     yolo_node = Node(

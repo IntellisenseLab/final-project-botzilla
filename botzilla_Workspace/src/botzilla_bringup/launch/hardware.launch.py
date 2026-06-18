@@ -14,10 +14,13 @@ Prerequisites:
   - sudo usermod -a -G dialout $USER  (if permission errors)
 """
 
+import os
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+
+_NORESET = os.path.join(os.path.expanduser('~'), 'Desktop/Bozilla-ws/final-project-botzilla/noreset.so')
 
 
 def generate_launch_description():
@@ -42,6 +45,7 @@ def generate_launch_description():
         name='kinect_bridge',
         output='screen',
         parameters=[{'use_sim_time': False}],
+        additional_env={'LD_PRELOAD': _NORESET},
     )
 
     # ------------------------------------------------------------------ #

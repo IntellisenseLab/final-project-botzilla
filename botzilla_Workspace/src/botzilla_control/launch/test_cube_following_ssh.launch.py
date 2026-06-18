@@ -7,10 +7,14 @@ _NORESET = os.path.join(os.path.expanduser('~'), 'Desktop/Bozilla-ws/final-proje
 
 def generate_launch_description():
     """
-    TEST 6: Cube Following Test (Brain Node Part 1)
-    =============================================
-    Tests that the robot can search for a cube, align with it,
-    and drive toward it until it is grabbed.
+    TEST 6b: Cube Following Test — SSH / headless variant
+    ======================================================
+    Same as test_cube_following.launch.py but runs yolo_node with
+    QT_QPA_PLATFORM=offscreen so cv2.imshow does not crash when there
+    is no connected display (e.g. SSH from VS Code).
+
+    Annotated detections are still published to /perception/yolo_image
+    and can be viewed with rqt_image_view on a machine that has a display.
     """
 
     kobuki_base = Node(
@@ -33,13 +37,7 @@ def generate_launch_description():
         executable='yolo_node',
         name='yolo_node',
         output='screen',
-    )
-
-    yolo_node = Node(
-        package='botzilla_perception',
-        executable='yolo_node',
-        name='yolo_node',
-        output='screen',
+        additional_env={'QT_QPA_PLATFORM': 'offscreen'},
     )
 
     cube_collector = Node(

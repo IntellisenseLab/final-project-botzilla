@@ -9,8 +9,10 @@ import numpy as np
 import os
 from ultralytics import YOLO
 
-# Use absolute path to ensure weights are found regardless of where the node is launched from
-file_path = "/home/hiruna/Desktop/projects/Robotics_and_Automation/FinalProject/final-project-botzilla/runs/best-fit/best.pt"
+# Use a path relative to the user home or a specific workspace location
+import os
+home = os.path.expanduser('~')
+file_path = os.path.join(home, "Desktop/Bozilla-ws/final-project-botzilla/runs/best-fit/best.pt")
 
 # Kinect minimum sensing range (objects closer become 0 or invalid)
 KINECT_MIN_RANGE_M = 0.55
@@ -57,6 +59,14 @@ class YoloDetector(Node):
             # Use passthrough to keep raw bytes for index-based access
             depth_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
             self.latest_depth = depth_image
+            # Log depth frame stats every 30 frames to confirm valid data is arriving
+            if self.frame_count % 30 == 0:
+                valid_px = int(np.count_nonzero(depth_image > 0))
+                pct = valid_px * 100 // depth_image.size
+                max_val = int(depth_image.max())
+                self.get_logger().info(
+                    f'Depth frame: {valid_px} valid px ({pct}%), max={max_val}'
+                )
         except Exception as e:
             self.get_logger().error(f'Depth decode error: {e}')
 

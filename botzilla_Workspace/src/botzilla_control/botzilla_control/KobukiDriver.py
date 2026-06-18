@@ -193,7 +193,6 @@ class Kobuki:
             # Speed is the tangential speed of the wheels
             botspeed = abs(right_velocity - left_velocity) / 2.0
             botradius = 1 if (right_velocity - left_velocity) > 0 else -1
-            print(f"ROTATE -> speed: {botspeed}, radius: {botradius}")
         else:
             # TRANSLATION / ARC: Radius = (L+R)/(R-L) * (W/2)
             botspeed = (left_velocity + right_velocity) / 2.0

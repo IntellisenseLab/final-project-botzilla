@@ -10,7 +10,7 @@ CAPTURE_TIME_S = 2.5
 CAPTURE_SPEED = 0.12
 KP_ANGULAR = 1.2
 APPROACH_SPEED = 0.15
-CUBE_LOST_TIMEOUT_S = 1.5
+CUBE_LOST_TIMEOUT_S = 3.0   # Pi 5 YOLO runs ~0.75 fps; 1.5s was shorter than inter-frame gap
 
 class CubeCollector(Node):
     def __init__(self):
@@ -47,6 +47,16 @@ class CubeCollector(Node):
         if self.state == "SEARCHING":
             self.get_logger().info(f"Cube detected! Transitioning to TARGETING.")
             self.state = "TARGETING"
+        elif self.state == "APPROACHING":
+            # Count blind-spot confirmations on ACTUAL new YOLO frames, not 10 Hz
+            # control-loop ticks. On Pi 5 YOLO runs ~0.75 fps so a single z=0.0
+            # frame must not immediately trigger capture.
+            if msg.z == 0.0:
+                self._blind_spot_frames += 1
+                if self._blind_spot_frames >= 2:
+                    self._transition("CAPTURING", "Confirmed blind spot. Final push.")
+            else:
+                self._blind_spot_frames = 0
 
     def control_loop(self):
         msg = Twist()
@@ -75,39 +85,30 @@ class CubeCollector(Node):
             if self._cube_timed_out(now):
                 self._transition("SEARCHING", "Cube lost.")
             elif self.target_cube is not None:
-                # Use slightly higher gain here if needed, but respect user's preference for 0.5 for now
                 msg.angular.z = -KP_ANGULAR * 0.5 * self.target_cube.x
-                
-                # Debounce: require 3 consecutive frames of 0.0 distance to transition
-                if self.target_cube.z == 0.0:
-                    self._blind_spot_frames += 1
-                else:
-                    self._blind_spot_frames = 0
-                
-                if self._blind_spot_frames >= 3:
-                    self._transition("CAPTURING", "Confirmed blind spot. Final push.")
-                else:
-                    msg.linear.x = APPROACH_SPEED
+                msg.linear.x = APPROACH_SPEED
+                # Blind-spot transition is handled in cube_callback (real YOLO frames only)
 
         elif self.state == "CAPTURING":
-            # REFINED LOGIC: Drive as long as we see the box, plus 1 second after it disappears
-            CUBE_TIMEOUT_S = 0.4  # Time to wait before deciding it's "lost" from view
-            EXTRA_PUSH_S = 0.2    # Final push after loss
-            
-            # Check if we still see the cube (updates roughly at 15-30Hz)
+            # Pi 5 YOLO runs ~0.75 fps so inter-frame gap is ~1.3s.
+            # CUBE_TIMEOUT_S must be longer than that or we'd immediately think
+            # the cube is lost between every pair of YOLO frames.
+            CUBE_TIMEOUT_S = 2.0
+            EXTRA_PUSH_S = 0.3
+
             if (now - self._cube_last_seen).nanoseconds / 1e9 < CUBE_TIMEOUT_S:
-                # Still visible! Reset lost time
                 self._cube_lost_time = None
-                msg.linear.x = 0.12 # CAPTURE_SPEED
+                msg.linear.x = CAPTURE_SPEED
+                if self.target_cube is not None:
+                    msg.angular.z = -KP_ANGULAR * 0.3 * self.target_cube.x
             else:
-                # Box has disappeared! (Likely gone under the camera)
                 if self._cube_lost_time is None:
-                    self.get_logger().info("Cube lost from view. Performing final 1s push...")
+                    self.get_logger().info("Cube lost from view. Performing final push...")
                     self._cube_lost_time = now
-                
+
                 elapsed_since_lost = (now - self._cube_lost_time).nanoseconds / 1e9
                 if elapsed_since_lost < EXTRA_PUSH_S:
-                    msg.linear.x = 0.12 # CAPTURE_SPEED
+                    msg.linear.x = CAPTURE_SPEED
                 else:
                     self._transition("DONE", "Capture complete! Final push finished.")
 

@@ -1,3 +1,6 @@
+import faulthandler
+faulthandler.enable()   # print C-level stack trace on SIGSEGV
+
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -16,6 +19,13 @@ APRILTAG_DICT = aruco.DICT_APRILTAG_36h11
 # Only track these specific tag IDs as the drop-off zone markers
 TARGET_TAG_IDS = [203, 113]
 
+_FAMILY_NAMES = {
+    aruco.DICT_APRILTAG_36h11: 'APRILTAG_36h11',
+    aruco.DICT_APRILTAG_25h9:  'APRILTAG_25h9',
+    aruco.DICT_APRILTAG_16h5:  'APRILTAG_16h5',
+    aruco.DICT_6X6_250:        'ARUCO_6X6_250',
+}
+
 # Normalized horizontal offset threshold: below this = tag is "centered enough"
 CENTER_THRESHOLD = 0.07
 
@@ -24,21 +34,26 @@ class AprilTagNode(Node):
     def __init__(self):
         super().__init__('apriltag_node')
 
+        print('[INIT] cv2 version:', cv2.__version__, flush=True)
         self.bridge = cv_bridge.CvBridge()
+        print('[INIT] CvBridge OK', flush=True)
 
         # ArUco detector setup - Search multiple common AprilTag families
         self.families = [
             aruco.DICT_APRILTAG_36h11,
             aruco.DICT_APRILTAG_25h9,
             aruco.DICT_APRILTAG_16h5,
-            aruco.DICT_6X6_250  # Just in case they used a standard ArUco app
+            aruco.DICT_6X6_250
         ]
+        print('[INIT] families list OK', flush=True)
         self.dicts = [aruco.getPredefinedDictionary(f) for f in self.families]
-        self.aruco_params = aruco.DetectorParameters()
-        self.aruco_params.adaptiveThreshWinSizeMin = 3
-        self.aruco_params.adaptiveThreshWinSizeMax = 23
-        self.aruco_params.adaptiveThreshWinSizeStep = 10
-        self.aruco_params.minDistanceToBorder = 3
+        print('[INIT] getPredefinedDictionary OK', flush=True)
+        # DetectorParameters_create() is the correct API for OpenCV 4.6 (ARM64).
+        # DetectorParameters() constructor exists but attribute assignment segfaults on 4.6.
+        # The four custom values below are all OpenCV defaults, so using create() with no
+        # modifications is equivalent.
+        self.aruco_params = aruco.DetectorParameters_create()
+        print('[INIT] DetectorParameters_create() OK', flush=True)
 
         # Subscribe to Kinect RGB stream
         self.subscription = self.create_subscription(
@@ -59,12 +74,29 @@ class AprilTagNode(Node):
         # Debug annotated image for rqt
         self.debug_pub = self.create_publisher(Image, '/perception/apriltag_image', 10)
 
+        # Enable/disable control — allows FSM to pause tag processing to free CPU
+        self._enabled = True
+        self.create_subscription(Bool, '/apriltag/enable', self._enable_cb, 10)
+
         self.get_logger().info(
             f'AprilTag Node started. Tracking Tag ID={TARGET_TAG_IDS} '
             f'(family: DICT_APRILTAG_36h11).'
         )
 
+    def _enable_cb(self, msg: Bool):
+        if self._enabled != msg.data:
+            self._enabled = msg.data
+            self.get_logger().info(
+                f'AprilTag processing {"ENABLED" if self._enabled else "DISABLED"}'
+            )
+
     def image_callback(self, msg):
+        if not self._enabled:
+            # Publish "not visible" so FSM doesn't use stale data
+            vis = Bool()
+            vis.data = False
+            self.drop_off_visible_pub.publish(vis)
+            return
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
             gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
@@ -81,18 +113,20 @@ class AprilTagNode(Node):
                 
                     if ids is not None:
                         detected_ids = ids.flatten().tolist()
-                        self.get_logger().info(f"[{label}] Found Tags: {detected_ids} in family {self.families[i]}", throttle_duration_sec=1.0)
-                        
+                        family_name = _FAMILY_NAMES.get(self.families[i], str(self.families[i]))
+                        self.get_logger().info(
+                            f'[{label}] Tags detected: {detected_ids} (family: {family_name})',
+                            throttle_duration_sec=1.0
+                        )
+
                         aruco.drawDetectedMarkers(cv_image, corners, ids)
                         for idx, tag_id in enumerate(detected_ids):
                             if tag_id in TARGET_TAG_IDS:
                                 found = True
-                                # Get the center of the detected tag
-                                # Get the center of the detected tag
                                 tag_corners = corners[idx][0]
                                 cx = int(np.mean(tag_corners[:, 0]))
                                 cy = int(np.mean(tag_corners[:, 1]))
-                                
+
                                 # If mirrored, we must un-mirror the cx coordinate
                                 if label == "Mirrored":
                                     cx = img_w - cx
@@ -110,6 +144,11 @@ class AprilTagNode(Node):
                                 pos_msg.y = float(cy)
                                 pos_msg.z = float(tag_height)
                                 self.drop_off_pos_pub.publish(pos_msg)
+                                self.get_logger().info(
+                                    f'[TARGET] Tag ID={tag_id} detected | x={norm_x:.3f} '
+                                    f'({"LEFT" if norm_x < -CENTER_THRESHOLD else "RIGHT" if norm_x > CENTER_THRESHOLD else "CENTRED"})',
+                                    throttle_duration_sec=0.5
+                                )
 
                                 # Draw debug overlay
                                 cv2.circle(cv_image, (cx, cy), 8, (0, 0, 255), -1)
@@ -119,6 +158,12 @@ class AprilTagNode(Node):
                                 break
                     if found: break
                 if found: break
+
+            if not found:
+                self.get_logger().info(
+                    f'[NOT DETECTED] No target AprilTag (IDs {TARGET_TAG_IDS}) in frame.',
+                    throttle_duration_sec=2.0
+                )
 
             visible_msg = Bool()
             visible_msg.data = found

@@ -44,8 +44,11 @@ What to watch for:
   - /drop_off_visible changes from False to True when you show it the tag.
   - x on /drop_off_pose approaches 0 as you aim the robot at the centre of the tag.
 """
+import os
 from launch import LaunchDescription
 from launch_ros.actions import Node
+
+_NORESET = os.path.join(os.path.expanduser('~'), 'Desktop/Bozilla-ws/final-project-botzilla/noreset.so')
 
 
 def generate_launch_description():
@@ -54,6 +57,7 @@ def generate_launch_description():
         executable='kinect_bridge',
         name='kinect_bridge',
         output='screen',
+        additional_env={'LD_PRELOAD': _NORESET},
     )
 
     apriltag_node = Node(

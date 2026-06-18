@@ -26,3 +26,5 @@ datasets/Cube-Detection-Dataset*/
 datasets/runs/detect/
 datasets/vids/
 
+# LLM Instructions
+CLAUDE.md
