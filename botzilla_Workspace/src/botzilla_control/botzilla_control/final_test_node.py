@@ -70,7 +70,7 @@ ARRIVED_DIST = 0.12    # m
 
 # ── Search spin ───────────────────────────────────────────────────────────────
 SEARCH_SPEED    = 0.25                          # rad/s (slow for ~0.75fps YOLO on Pi 5)
-SEARCH_DURATION = 2 * math.pi / SEARCH_SPEED   # ≈ 25 s per full 360°
+SEARCH_DURATION = 2 * math.pi / SEARCH_SPEED + 2.5  # ≈ 25 s per full 360°
 
 # ── Cube collection — identical to cube_collector.py (verified working) ──────
 KP_ANG_CUBE         = 1.2    # pure P-gain for angular correction
@@ -80,7 +80,7 @@ APPROACH_SPEED      = 0.15   # m/s
 CAPTURE_SPEED       = 0.12   # m/s
 CUBE_LOST_TIMEOUT_S = 5.0    # s — YOLO gaps can be 2.8s+; 5s survives two missed frames
 CUBE_TIMEOUT_S      = 2.0    # s — grace period in CAPTURING before "lost"
-EXTRA_PUSH_S        = 0.3    # s — final blind push after cube leaves frame
+EXTRA_PUSH_S        = 0.1    # s — final blind push after cube leaves frame
 BLIND_SPOT_FRAMES   = 2      # consecutive z==0.0 readings before CAPTURING
 
 # ── AprilTag delivery (from tag_follower_node) ────────────────────────────────
@@ -88,12 +88,12 @@ DELIVERY_SEARCH_SPEED = 0.30   # rad/s while scanning for tag at drop-off quadra
 FOLLOW_SPEED          = 0.08   # m/s forward during delivery approach
 KP_ANG_TAG            = 0.6
 TAG_ALIGN_THRESH      = 0.10   # normalised units
-STOP_HEIGHT           = 300    # pixel height of tag when "arrived" (~0.4-0.5 m)
+STOP_HEIGHT           = 230    # pixel height of tag when "arrived" (~0.4-0.5 m)
 
 # ── Detach (arms release cube) ────────────────────────────────────────────────
 DETACH_SPEED = -0.10   # m/s (reverse)
 DETACH_TIME  =  1.8    # s
-TAG_GRACE_S  =  1.5    # s — keep driving forward when tag briefly drops out
+TAG_GRACE_S  =  2.0    # s — keep driving forward when tag briefly drops out
 
 
 def _clamp(v, lo, hi):
