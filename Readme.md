@@ -46,7 +46,7 @@ The system is built on three core robotics pillars: **Perception**, **Planning**
 |-----------|---------|
 | **Mobile Base** | Kobuki QBot (differential-drive) |
 | **Vision System** | Xbox Kinect RGB-D Camera |
-| **Compute** | Raspberry Pi 4 (4GB) |
+| **Compute** | Raspberry Pi 5 (2GB) |
 | **Manipulator** | Simple gripper arm attached to base |
 | **Power** | Kobuki battery with charging dock + voltage monitoring sensor |
 
@@ -73,6 +73,10 @@ The system is built on three core robotics pillars: **Perception**, **Planning**
 - ROS 2 Jazzy installed
 - Python 3.10+
 - Gazebo (for simulation) 
+
+### Yolo Traning 
+
+- Use this [link](https://github.com/nilum2002/Cube-Dataset-final-project) to find the yolotraing results and model.  
 
 ### Installation
 Note that the rasberrypi integration in the following branch.
