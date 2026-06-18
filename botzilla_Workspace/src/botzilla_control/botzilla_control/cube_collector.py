@@ -21,7 +21,6 @@ class CubeCollector(Node):
         self._phase_timer = None
         self._cube_last_seen = self.get_clock().now()
         self._cube_lost_time = None  # Track when the box actually disappears
-        self._blind_spot_frames = 0  # Counter for robust blind-spot detection
         self._vision_ready = False
 
         self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
@@ -75,24 +74,16 @@ class CubeCollector(Node):
             if self._cube_timed_out(now):
                 self._transition("SEARCHING", "Cube lost.")
             elif self.target_cube is not None:
-                # Use slightly higher gain here if needed, but respect user's preference for 0.5 for now
                 msg.angular.z = -KP_ANGULAR * 0.5 * self.target_cube.x
-                
-                # Debounce: require 3 consecutive frames of 0.0 distance to transition
                 if self.target_cube.z == 0.0:
-                    self._blind_spot_frames += 1
-                else:
-                    self._blind_spot_frames = 0
-                
-                if self._blind_spot_frames >= 3:
-                    self._transition("CAPTURING", "Confirmed blind spot. Final push.")
+                    self._transition("CAPTURING", "In blind spot. Firming capture.")
                 else:
                     msg.linear.x = APPROACH_SPEED
 
         elif self.state == "CAPTURING":
             # REFINED LOGIC: Drive as long as we see the box, plus 1 second after it disappears
             CUBE_TIMEOUT_S = 0.4  # Time to wait before deciding it's "lost" from view
-            EXTRA_PUSH_S = 0.2    # Final push after loss
+            EXTRA_PUSH_S = 1.0    # Final push after loss
             
             # Check if we still see the cube (updates roughly at 15-30Hz)
             if (now - self._cube_last_seen).nanoseconds / 1e9 < CUBE_TIMEOUT_S:
